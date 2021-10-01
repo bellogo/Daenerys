@@ -28,7 +28,7 @@ router.post("/payments/card/initiatePayment", verifyToken, validateCardDetails, 
 router.post("/payments/card/validatePayment", verifyToken, validateTransactionDetails, validatePayment);
 
 router.post("/payments/webhook", resolvePayment);
-router.get("/payments/verify", verifyPayment);
+router.post("/payments/verify", verifyPayment);
 
 router.post("/user/transfer/", verifyToken, validateTransferDetails, transferFunds);
 router.post("/create/beneficiary/", verifyToken, validateBeneficiaryDetails, createBeneficiary);

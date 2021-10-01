@@ -90,7 +90,7 @@ module.exports = class paymentController {
         gateway: "flutterwave", amount: flwResponse.data.data.charged_amount,
       });
     }  
-    return successResponse(res, responseCode.CREATED, 'Payment initiated.', { "flw_ref": flwResponse.data.data.flw_ref, "transaction_id": flwResponse.data.data.id, "tx_ref": flwResponse.data.data.tx_ref });
+    return successResponse(res, responseCode.CREATED, 'Payment initiated.', { "flw_ref": flwResponse.data.data.flw_ref });
     } catch (err) {
       console.log(err);
       return errorResponse(res, responseCode.INTERNAL_SERVER_ERROR, 'An error occurred.', err)
@@ -104,11 +104,7 @@ module.exports = class paymentController {
       if(transaction.status === "successful") return errorResponse(res, responseCode.BAD_REQUEST, 'Payment already validated.');
       const callValidate = await axios.post('https://api.flutterwave.com/v3/validate-charge', {otp, flw_ref}, { headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${flwSecKey}`} });
       if (callValidate.data.status !== "success") return errorResponse(res, responseCode.BAD_REQUEST, callValidate.response.data.message);
-      if(callValidate.data.status === "successful") {
-        await updateTransaction(flw_ref, callValidate.data.tx_ref, { status: callValidate.data.status });
-        await creditAccount(req.decoded.email, callValidate.data.charged_amount);
-      }
-      return successResponse(res, responseCode.CREATED, 'Payment validated.');
+      return successResponse(res, responseCode.CREATED, 'Payment validated.', { "transaction_id": callValidate.data.data.id, "tx_ref": callValidate.data.data.tx_ref });
     } catch (err) {
       console.log(err);
       return errorResponse(res, responseCode.INTERNAL_SERVER_ERROR, 'An error occurred.', err);
@@ -146,14 +142,14 @@ module.exports = class paymentController {
 
  static async verifyPayment (req, res) {
   try {
-    const {tx_ref, transaction_id} = req.params;
-    const transaction = await finžBytx_ref(tx_ref);
+    const {tx_ref, transaction_id} = req.body;
+    const transaction = await findBytx_ref(tx_ref);
     if(!transaction) return errorResponse(res, responseCode.BAD_REQUEST, 'transaction does not exist');
     if(transaction.status === "successful") return errorResponse(res, responseCode.BAD_REQUEST, 'Payment already verified.');
     const verifStatus = await axios.get(`https://api.flutterwave.com/v3/transactions/${transaction_id}/verify`, { headers: { 'Authorization': `Bearer ${flwSecKey}`} });
     if (verifStatus.data.status !== "success") return errorResponse(res, responseCode.BAD_REQUEST, verifStatus.response.data.message);
-    if(verifStatus.data.data.status === "successful" && transaction.status !== "successful"){
-      await updateTransaction(txRef, { status: "successful" });
+    if(verifStatus.data.data.status === "successful"){
+      await updateTransaction(tx_ref, { status: "successful" });
       await creditAccount(verifStatus.data.data.customer.email, verifStatus.data.data.charged_amount);
     }    
     return successResponse(res, responseCode.CREATED, 'Payment verified.');
