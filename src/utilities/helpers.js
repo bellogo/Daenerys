@@ -104,7 +104,7 @@ exports.validateRequest = (req, res, next, schema) => {
 
   const options = {
     abortEarly: false, // include all errors
-    allowUnknown: false // ignore unknown props
+    allowUnknown: true // ignore unknown props
     // stripUnknown: true // remove unknown props
   }
 

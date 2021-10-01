@@ -13,30 +13,23 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    amount: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    account_number: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    narration: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    callback_url: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    debit_currency: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
     currency: {
       type: DataTypes.STRING,
       allowNull: false,
-    }
+    },
+    recipient_address: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    mobile_number: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    email: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+
   });
 
   Beneficiary.associate = models => {
@@ -46,5 +39,5 @@ module.exports = (sequelize, DataTypes) => {
     });
   };
 
-  return User;
+  return Beneficiary;
 };

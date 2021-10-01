@@ -8,25 +8,25 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
+      userId: {
+        type: Sequelize.STRING
+      },
       account_bank: {
         type: Sequelize.STRING
       },
       account_number: {
         type: Sequelize.STRING
       },
-      amount: {
-        type: Sequelize.INTEGER
-      },
-      narration: {
-        type: Sequelize.STRING
-      },
-      callback_url: {
-        type: Sequelize.STRING
-      },
-      debit_currency: {
-        type: Sequelize.STRING
-      },
       currency: {
+        type: Sequelize.STRING
+      },
+      recipient_address: {
+        type: Sequelize.STRING
+      },
+      mobile_number: {
+        type: Sequelize.STRING
+      },
+      email: {
         type: Sequelize.STRING
       },
       createdAt: {

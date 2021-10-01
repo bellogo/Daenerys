@@ -12,7 +12,6 @@ module.exports = class userController {
       const { email, password } = req.body;
       req.body.email = email.toLowerCase();
       const user = await findUserByEmail(req.body.email);
-      console.log(user);
       if(user)return errorResponse(res, responseCode.BAD_REQUEST, 'user already exists.')
       req.body.password = await hash(password);
       const newUser = await createUser(req.body);

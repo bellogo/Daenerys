@@ -4,6 +4,6 @@ const config = require("../../config");
 const { jwtKey } = config;
 
 module.exports = (payload, secret = jwtKey) => {
-  const token = jwt.sign(payload, secret, { expiresIn: "1d" });
+  const token = jwt.sign(payload, secret, { expiresIn: "7d" });
   return token;
 };

@@ -42,5 +42,26 @@ module.exports = class Validations {
     await helpers.validateRequest(req, res, next, schema)
   }
 
+  static async validateBeneficiaryDetails (req, res, next) {
+    const schema = Joi.object({
+      account_bank: Joi.string().empty().required(),
+      account_number: Joi.string().empty().required(),
+      currency: Joi.string().empty().required(),
+      email: Joi.string().email({ minDomainSegments: 2, tlds: { allow: ["com", "net", "uk", "co"] } }).empty(),
+      recipient_address: Joi.string().empty(),
+      mobile_number: Joi.string().empty(),
+    })
+    await helpers.validateRequest(req, res, next, schema)
+  }
+
+  static async validateWithdrawDetails (req, res, next) {
+    const schema = Joi.object({
+      beneficiary_id: Joi.number().empty().required(),
+      amount: Joi.number().empty().required(),
+      narration: Joi.string().empty().required(),
+      debit_currency: Joi.string().empty(),
+    })
+    await helpers.validateRequest(req, res, next, schema)
+  }
 
 }

@@ -4,14 +4,17 @@ const userController = require("./src/controllers/user");
 const validations = require("./src/utilities/joi_validations");
 const Authentication = require("./src/middleware/auth");
 const paymentController = require("./src/controllers/payment");
+const beneficiaryController = require("./src/controllers/beneficiary");
 
 
 const { createUser, signInUser } = userController;
+const { createBeneficiary } = beneficiaryController;
+
 // const { initiatePayment, validateCharge, updatePayment } = paymentController;
-const { initiatePayment, validatePayment, verifyPayment, resolvePayment, transferFunds } = paymentController;
+const { initiatePayment, validatePayment, verifyPayment, resolvePayment, transferFunds, withdraw } = paymentController;
 
 
-const { validateUser, validateCardDetails, validateTransactionDetails, validateTransferDetails } = validations;
+const { validateUser, validateCardDetails, validateTransactionDetails, validateTransferDetails, validateBeneficiaryDetails, validateWithdrawDetails } = validations;
 const { verifyToken } = Authentication;
 
 const router = express.Router();
@@ -25,11 +28,11 @@ router.post("/payments/card/initiatePayment", verifyToken, validateCardDetails, 
 router.post("/payments/card/validatePayment", verifyToken, validateTransactionDetails, validatePayment);
 
 router.post("/payments/webhook", resolvePayment);
-router.get("/payments/redirect_url", verifyPayment);
+router.get("/payments/verify", verifyPayment);
 
 router.post("/user/transfer/", verifyToken, validateTransferDetails, transferFunds);
-router.post("/create/beneficiary/", verifyToken, validateTransferDetails, createBeneficiary);
-
+router.post("/create/beneficiary/", verifyToken, validateBeneficiaryDetails, createBeneficiary);
+router.post("/beneficiary/withdraw", verifyToken, validateWithdrawDetails, withdraw);
 
 
 module.exports = router;

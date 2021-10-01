@@ -9,6 +9,7 @@ module.exports = {
     database: database,
     host: host,
     dialect: 'mysql',
+    logging: false
   },
   test: {
     username: 'database_dev',
