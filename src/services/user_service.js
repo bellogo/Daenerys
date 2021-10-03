@@ -17,7 +17,7 @@ module.exports = class userService {
     try {
       return await db.Users.findOne({ 
         where: {email}, 
-        include: [{ model: db.Accounts, as: "userAccount" }]
+        include: [{ model: db.Accounts, as: "userAccount" }, { model: db.Beneficiaries, as: "userBeneficiaries" }]
       });
     } catch (err) {
       throw err;

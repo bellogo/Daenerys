@@ -202,76 +202,34 @@ static async withdraw (req, res) {
     const user = await findUserByEmail(req.decoded.email);
     const { beneficiary_id, amount, narration, debit_currency} = req.body;
     const beneficiary = await getById(beneficiary_id);
-    if(!beneficiary) return errorResponse(res, responseCode.BAD_REQUEST, 'beneficiary does not exist.');     
+    if(!beneficiary) return errorResponse(res, responseCode.BAD_REQUEST, 'beneficiary does not exist.');
+    console.log("beneficiary.userId", beneficiary.userId);
+    console.log("req.decoded.id", req.decoded.id);
+    if(beneficiary.userId !== req.decoded.id) return errorResponse(res, responseCode.BAD_REQUEST, 'cannot withdraw to this beneficiary');
     if(amount > user.userAccount.balance) return errorResponse(res, responseCode.BAD_REQUEST, 'your balance is not enough for this transaction.');
-    
-    
 
-    let axiosConfig = { headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${flwSecKey}`}, params: { 'type': 'card' } };
-    // const { card_number, cvv, expiry_month, expiry_year, amount, pin } = req.body;
-    const payload = {
-      card_number,
-      cvv,
-      expiry_month,
-      expiry_year,
-      "currency": "NGN",
-      amount,
-      "redirect_url": `${host}/payments/redirect_url`,
-      "fullname": user.name,
-      "email": user.email,
-      "enckey": flwEncKey,
-      "tx_ref": await generateRandomToken(),
-    }  
-   
-      const callFlutterCharges = async ( payload, axiosConfig) => {
-        const stringPayload = JSON.stringify(payload);
-        const encrypted = encrypt(flwEncKey, stringPayload);
-        return await axios.post('https://api.flutterwave.com/v3/charges', { "client": encrypted }, axiosConfig);
-      }
-      let flwResponse = await callFlutterCharges(payload, axiosConfig);
-      if (flwResponse.data.status !== "success") return errorResponse(res, responseCode.BAD_REQUEST, flwResponse.response.message);
-      if (flwResponse.data.meta.authorization.mode === 'redirect') {
-        await createTransaction({
-          userId: user.id,
-          accountId: user.userAccount.id,
-          tx_ref: payload.tx_ref,
-          status: 'pending',
-          payment_type: 'card',
-          type: "credit",
-          gateway: "flutterwave", 
-          amount: payload.amount,
-        });
-        let url = response.meta.authorization.redirect;
-        return open(url);
-      }
-      if(flwResponse.data.meta.authorization.mode === 'pin' && !pin) return errorResponse(res, responseCode.BAD_REQUEST, 'card pin is required.');
-      if (flwResponse.data.meta.authorization.mode === 'pin') {
-          let payload2 = payload;
-          payload2.authorization = {
-          "mode": "pin",
-          "fields": [ "pin" ],
-          pin
-        }
-      flwResponse = await callFlutterCharges(payload2, axiosConfig);
-      if (flwResponse.data.status !== "success") return errorResponse(res, responseCode.BAD_REQUEST, flwResponse.data.message);
-      await createTransaction({
-        userId: user.id,
-        accountId: user.userAccount.id,
-        flw_ref: flwResponse.data.data.flw_ref,
-        tx_ref: flwResponse.data.data.tx_ref,
-        status: flwResponse.data.data.status,
-        payment_type: flwResponse.data.data.payment_type,
-        type: "credit",
-        gateway: "flutterwave", amount: flwResponse.data.data.charged_amount,
-      });
+    let axiosConfig = { headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${flwSecKey}`} };
+    const payload = { 
+    "account_bank": beneficiary.account_bank,
+    "account_number": beneficiary.account_number,
+    amount,
+    narration,
+    "currency": beneficiary.currency,
+    "reference":  await generateRandomToken(),
+    "callback_url": "http://2c7e-102-89-3-159.ngrok.io/api/v1/payments/webhook",
+    debit_currency
     }
+     console.log(payload);
+    const withdraw = await axios.post('https://api.flutterwave.com/v3/transfers', payload, axiosConfig);
+    // console.log(withdraw.data);
+    if (withdraw.data.status !== "success") return errorResponse(res, responseCode.BAD_REQUEST, withdraw.response.message);
       
-    return successResponse(res, responseCode.CREATED, 'Payment initiated.', { "flw_ref": flwResponse.data.data.flw_ref });
+    return successResponse(res, responseCode.CREATED, 'withdraw initiated.', {"data": withdraw.data});
 
 
 
   } catch (error) {
-    
+    console.log(error);
   }
 
 }
