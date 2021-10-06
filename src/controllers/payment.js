@@ -219,15 +219,13 @@ static async withdraw (req, res) {
     "callback_url": "http://2c7e-102-89-3-159.ngrok.io/api/v1/payments/webhook",
     debit_currency
     }
-     console.log(payload);
     const withdraw = await axios.post('https://api.flutterwave.com/v3/transfers', payload, axiosConfig);
-    // console.log(withdraw.data);
-    if (withdraw.data.status !== "success") return errorResponse(res, responseCode.BAD_REQUEST, withdraw.response.message);
-      
+    if (withdraw.data.status !== "success") return errorResponse(res, responseCode.BAD_REQUEST, withdraw.response.message); 
+    await createTransaction({
+     // create transaction and wait for webhook to confirm payment
+    }); 
+
     return successResponse(res, responseCode.CREATED, 'withdraw initiated.', {"data": withdraw.data});
-
-
-
   } catch (error) {
     console.log(error);
   }
