@@ -221,11 +221,18 @@ static async withdraw (req, res) {
     }
     const withdraw = await axios.post('https://api.flutterwave.com/v3/transfers', payload, axiosConfig);
     if (withdraw.data.status !== "success") return errorResponse(res, responseCode.BAD_REQUEST, withdraw.response.message); 
-    await createTransaction({
-     // create transaction and wait for webhook to confirm payment
-    }); 
+     await createTransaction({
+      userId: user.id,
+      accountId: user.userAccount.id,
+      tx_ref: withdraw.data.data.reference,
+      status: withdraw.data.data.status,
+      payment_type: "withdrawal",
+      type: "debit",
+      gateway: "flutterwave", 
+      amount: withdraw.data.data.amount + withdraw.data.data.fee,
+    });
 
-    return successResponse(res, responseCode.CREATED, 'withdraw initiated.', {"data": withdraw.data});
+    return successResponse(res, responseCode.CREATED, 'withdraw initiated.', withdraw.data.data);
   } catch (error) {
     console.log(error);
   }
