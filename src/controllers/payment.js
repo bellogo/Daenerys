@@ -238,6 +238,4 @@ static async withdraw (req, res) {
   }
 
 }
-
-
 }
